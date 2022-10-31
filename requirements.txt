@@ -1,4 +1,5 @@
 black
+numpy
 pandas
 pre-commit
 selenium
