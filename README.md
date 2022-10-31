@@ -1,4 +1,4 @@
-# KTH course scraper
+# KTH Course Scraper
 
 A simple scraper for information about all courses given at [KTH Royal Institute of Technology](https://www.kth.se/en). The creation of this scraper had no real purpose other than wasting some time. It is made available just in case someone else might find it useful.
 
