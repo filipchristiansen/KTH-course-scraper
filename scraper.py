@@ -242,9 +242,13 @@ class KTHCourseScraper(webdriver.Firefox):
         return df_
 
 
-if __name__ == '__main__':
+def main():
     parser = ArgumentParser()
     parser.add_argument('-d', '--debug', type=bool, default=False, help='Debug mode')
     args = parser.parse_args()
 
     KTHCourseScraper()(debug=args.debug)
+
+
+if __name__ == '__main__':
+    main()
