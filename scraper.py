@@ -1,7 +1,10 @@
 import time
+from argparse import ArgumentParser
+from operator import itemgetter
 from typing import Any
 
 import numpy as np
+import pandas as pd
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
@@ -12,7 +15,21 @@ class KTHCourseScraper(webdriver.Firefox):
     def __init__(self):
         webdriver.Firefox.__init__(self)
 
-    def get_courses(self, debug: bool = False) -> list[dict[str, Any]]:
+    def __call__(self, debug: bool = False) -> None:
+        courses = self._get_courses(debug)
+        course_codes_and_urls = tuple(map(itemgetter('Kurskod', 'URL'), courses))
+        course_contents, course_offerings = self._get_course_content_and_offerings(course_codes_and_urls)
+
+        for course in courses:
+            course.update(course_contents.get(course['Kurskod'], {}))
+
+        df_courses = self._post_process_courses(pd.DataFrame(courses))
+        df_offerings = self._post_process_course_offerings(pd.DataFrame(course_offerings))
+
+        df_courses.to_csv('kth_courses.csv', index=False)
+        df_offerings.to_csv('kth_offerings.csv', index=False)
+
+    def _get_courses(self, debug: bool = False) -> list[dict[str, Any]]:
         courses = []
 
         departments = ['A', 'C', 'E', 'H', 'J', 'K', 'M', 'S', 'U']
@@ -50,7 +67,7 @@ class KTHCourseScraper(webdriver.Firefox):
 
         return courses
 
-    def get_course_content_and_offerings(
+    def _get_course_content_and_offerings(
         self, course_codes_and_urls: tuple[tuple[str, str]]
     ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         course_offerings = []
@@ -186,3 +203,51 @@ class KTHCourseScraper(webdriver.Firefox):
             if bodies:
                 course_info[header] = bodies
         return course_info
+
+    @staticmethod
+    def _post_process_courses(df: pd.DataFrame) -> pd.DataFrame:
+        df_ = df.rename(
+            columns={
+                'Kurskod': 'Course code',
+                'Kursnamn': 'Course name',
+                'Omfattning': 'hp',
+                'Utbildningsnivå': 'Level',
+            }
+        ).drop(columns=['Ethical approach'])
+        df_.hp = df_.hp.str.replace('fup', '').str.replace('hp', '').astype(float)
+        df_['School'] = [x[: np.where([c.isnumeric() for c in x])[0][0]] for x in df_['Course code']]
+        df_['Course web'] = 'https://www.kth.se/social/course/' + df_['Course code']
+
+        # remove examensarbeten
+        df_ = df_[~df_['Course name'].str.lower().str.contains('examensarbete')]
+
+        return df_
+
+    @staticmethod
+    def _post_process_course_offerings(df: pd.DataFrame) -> pd.DataFrame:
+        df_ = df.rename(columns={'For course offering': 'Year'})
+        df_.loc[df_.Periods.apply(lambda x: isinstance(x, list)), 'Periods'] = df_.loc[
+            df_.Periods.apply(lambda x: isinstance(x, list)), 'Periods'
+        ].str.join(', ')
+
+        signs_to_remove = ["'", ' hp', ' fup', 'Autumn', 'Spring', ':']
+        for sign in signs_to_remove:
+            df_.Periods = df_.Periods.str.replace(sign, '', regex=False)
+
+        for period in ['P1', 'P2', 'P3', 'P4']:
+            df_[period] = df_.Periods.str.extract(fr'(?<=(?:{period}\s\())(.+?)(?=\))').astype(float)
+
+        df_ = df_.drop(columns='Periods')
+        return df_
+
+
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('-d', '--debug', type=bool, default=False, help='Debug mode')
+    args = parser.parse_args()
+
+    KTHCourseScraper()(debug=args.debug)
+
+
+if __name__ == '__main__':
+    main()
