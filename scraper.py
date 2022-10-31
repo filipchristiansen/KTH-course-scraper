@@ -1,7 +1,7 @@
 import time
 from argparse import ArgumentParser
 from operator import itemgetter
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -29,7 +29,7 @@ class KTHCourseScraper(webdriver.Firefox):
         df_courses.to_csv('kth_courses.csv', index=False)
         df_offerings.to_csv('kth_offerings.csv', index=False)
 
-    def _get_courses(self, debug: bool = False) -> list[dict[str, Any]]:
+    def _get_courses(self, debug: bool = False) -> List[Dict[str, Any]]:
         courses = []
 
         departments = ['A', 'C', 'E', 'H', 'J', 'K', 'M', 'S', 'U']
@@ -68,8 +68,8 @@ class KTHCourseScraper(webdriver.Firefox):
         return courses
 
     def _get_course_content_and_offerings(
-        self, course_codes_and_urls: tuple[tuple[str, str]]
-    ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        self, course_codes_and_urls: Tuple[Tuple[str, str]]
+    ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
         course_offerings = []
 
         course_contents = {}
@@ -103,7 +103,7 @@ class KTHCourseScraper(webdriver.Firefox):
 
         return course_contents, course_offerings
 
-    def _get_table_column_names(self) -> list[str]:
+    def _get_table_column_names(self) -> List[str]:
 
         # get course search page (limit results on something (e.g. education level) required by the website)
         self.get('https://www.kth.se/student/kurser/sokkurs?eduLevel=0')
@@ -122,7 +122,7 @@ class KTHCourseScraper(webdriver.Firefox):
         except NoSuchElementException:
             pass
 
-    def _get_course_content(self) -> dict[str, Any]:
+    def _get_course_content(self) -> Dict[str, Any]:
         course_contents = {}
         for content in self.find_element(By.ID, 'courseContentBlock').find_elements(By.CSS_SELECTOR, 'span'):
             try:
@@ -147,7 +147,7 @@ class KTHCourseScraper(webdriver.Firefox):
             name = name[:idx]
         return name
 
-    def _get_course_offerings(self, course_code: str) -> list[dict[str, Any]]:
+    def _get_course_offerings(self, course_code: str) -> List[Dict[str, Any]]:
         course_offerings = []
         try:
             semesters = self.find_element(By.ID, 'semesterDropdown').find_elements(By.CSS_SELECTOR, 'option')[1:]
@@ -166,7 +166,7 @@ class KTHCourseScraper(webdriver.Firefox):
             return []
         return course_offerings
 
-    def _get_course_contacts(self) -> dict[str, Any]:
+    def _get_course_contacts(self) -> Dict[str, Any]:
         contacts = {}
         contact_fields = self.find_element(By.ID, 'roundContact')
 
@@ -183,9 +183,9 @@ class KTHCourseScraper(webdriver.Firefox):
                     contacts[contact_type] = {p.text: p.get_attribute('href') for p in persons}
         return contacts
 
-    def _get_course_info(self) -> dict[str, Any]:
+    def _get_course_info(self) -> Dict[str, Any]:
         offering_info = self.find_element(By.CSS_SELECTOR, '#roundKeyInformation > div:nth-child(1)')
-        course_info: dict[str, Any] = {}
+        course_info: Dict[str, Any] = {}
         for child in offering_info.find_elements(By.CSS_SELECTOR, 'h3'):
             header = child.text
             bodies = []
