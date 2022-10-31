@@ -16,10 +16,9 @@ class KTHCourseScraper(webdriver.Firefox):
         webdriver.Firefox.__init__(self)
 
     def __call__(self, debug: bool = False) -> Any:
-        with KTHCourseScraper() as driver:
-            courses = driver._get_courses(debug)
-            course_codes_and_urls = tuple(map(itemgetter('Kurskod', 'URL'), courses))
-            course_contents, course_offerings = driver._get_course_content_and_offerings(course_codes_and_urls)
+        courses = self._get_courses(debug)
+        course_codes_and_urls = tuple(map(itemgetter('Kurskod', 'URL'), courses))
+        course_contents, course_offerings = self._get_course_content_and_offerings(course_codes_and_urls)
 
         for course in courses:
             course.update(course_contents.get(course['Kurskod'], {}))
