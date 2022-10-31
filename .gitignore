@@ -1,0 +1,18 @@
+# OS X Files
+*.DS_Store
+*Thumbs.db
+
+# Python venv
+.venv
+
+# Byte-compiled Python
+*__pycache__
+
+# Jupyter Notebook
+*.ipynb_checkpoints
+
+# Selenium logs
+geckodriver.log
+
+# MyPy
+.mypy_cache

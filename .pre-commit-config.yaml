@@ -1,0 +1,141 @@
+default_language_version:
+  python: python3.10.6 # python version
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      # Files
+      - id: check-added-large-files
+        description: 'Prevent large files from being committed.'
+        args: ['--maxkb=50000']
+      - id: check-case-conflict
+        description: 'Check for files that would conflict in case-insensitive filesystems.'
+      - id: fix-byte-order-marker
+        description: 'Remove utf-8 byte order marker.'
+      - id: mixed-line-ending
+        description: 'Replace mixed line ending.'
+
+      # Git
+      - id: check-merge-conflict
+        description: 'Check for files that contain merge conflict strings.'
+        args: [--assume-in-merge]
+      - id: no-commit-to-branch
+        description: 'Check that no commits are made to the main/master branch.'
+
+      # File files for parseable syntax: json, python, toml, xml, yaml
+      - id: check-ast
+
+      # File and line endings
+      - id: end-of-file-fixer
+        description: 'Ensure that a file is either empty, or ends with one newline.'
+      - id: trailing-whitespace
+        description: 'Trim trailing whitespace.'
+
+      # Python
+      - id: check-docstring-first
+        description: 'Check a common error of defining a docstring after code.'
+      - id: double-quote-string-fixer
+        description: 'Replace double quoted strings with single quoted strings.'
+      - id: requirements-txt-fixer
+        description: 'Sort entries in requirements.txt.'
+
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black-jupyter
+        args: [--line-length=119, --skip-string-normalization]
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.2.0
+    hooks:
+      - id: pyupgrade
+        description: 'Automatically upgrade syntax for newer versions.'
+        args: [--py3-plus, --py36-plus, --py37-plus, --py38-plus, --py39-plus]
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.9.0
+    hooks:
+      - id: python-check-blanket-noqa
+        description: 'Enforce that `noqa` annotations always occur with specific codes. Sample annotations: `# noqa: F401`, `# noqa: F401,W203`.'
+      - id: python-check-blanket-type-ignore
+        description: 'Enforce that `# type: ignore` annotations always occur with specific codes. Sample annotations: `# type: ignore[attr-defined]`, `# type: ignore[attr-defined, name-defined]`.'
+      - id: python-no-eval
+        description: 'A quick check for the `eval()` built-in function.'
+      - id: python-use-type-annotations
+        description: 'Enforce that python3.6+ type annotations are used instead of type comments.'
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        description: 'Sort imports alphabetically, and automatically separated into sections and by type.'
+        args: [
+            --profile=black,
+            --filter-files, # Needed when running through pre-commit.
+            --line-length=119,
+            --remove-redundant-aliases, # Remove redundant aliases from imports, such as `import os as os`.
+            --float-to-top, # Move all non-indented imports to the top of the file
+            --order-by-type, # Order imports by type, which here refers to the implied type from the import name capitalization (CONSTANT_VARIABLE, CamelCaseClass, variable_or_function).
+          ]
+
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.1.1
+    hooks:
+      - id: pycln
+        description: 'Remove unused import statements.'
+        args: [--all]
+
+  - repo: https://github.com/crate-ci/typos
+    rev: typos-dict-v0.9.9
+    hooks:
+      - id: typos
+        args: [--exclude=*.csv]
+        pass_filenames: false
+
+  - repo: https://github.com/terrencepreilly/darglint
+    rev: v1.8.1
+    hooks:
+      - id: darglint
+
+  - repo: https://github.com/PyCQA/pylint
+    rev: v2.15.5
+    hooks:
+      - id: pylint
+        args:
+          [
+            '--disable=W1514,E0401,C0114,C0116,C0103,W1203,W1202,C0209,R0915,R0914,W0511,W1201,R0912,R0902,C0115,C0200,W0703,R0801,R0903',
+            --max-line-length=119,
+          ]
+
+  - repo: https://github.com/asottile/dead
+    rev: v1.5.0
+    hooks:
+      - id: dead
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        description: 'Enforce Python style consistency.'
+        args: [
+            --max-line-length=119,
+            --statistics,
+            --exit-zero,
+            '--ignore=E203,W503,R504',
+          ]
+        verbose: true
+        additional_dependencies: [
+            flake8-bugbear,
+            flake8-builtins,
+            flake8-comprehensions,
+            flake8-executable,
+            flake8-implicit-str-concat,
+            flake8-quotes,
+            flake8-raise,
+            flake8-return,
+            flake8-variables-names,
+            mccabe,
+            pandas-vet,
+            pep8-naming,
+            yesqa,
+          ]
