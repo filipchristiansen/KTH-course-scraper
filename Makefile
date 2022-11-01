@@ -2,6 +2,7 @@ VENV = .venv
 PYTHON = $(VENV)/bin/python3
 PIP = $(VENV)/bin/pip
 
+# create virtual environment
 .PHONY: venv
 venv: requirements.txt
 	python3 -m venv $(VENV)
