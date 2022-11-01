@@ -1,6 +1,6 @@
 # KTH Course Scraper
 
-A simple scraper for information about all courses given at [KTH Royal Institute of Technology](https://www.kth.se/en). The creation of this scraper had no real purpose other than wasting some time. It is made available just in case someone else might find it useful.
+A simple scraper for extracting information about all courses given at [KTH Royal Institute of Technology](https://www.kth.se/en). The creation of this scraper had no real purpose other than wasting some time. It is made available just in case someone else might find it useful.
 
 Running the scraper requires Python 3.8 or later (*due to the use of built-in type annotations*), an installation of [Firefox](https://www.mozilla.org), and the packages listed in [requirements.txt](requirements.txt).
 
