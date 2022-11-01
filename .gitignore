@@ -16,3 +16,6 @@ geckodriver.log
 
 # MyPy
 .mypy_cache
+
+# Debug related
+debug_*.csv
