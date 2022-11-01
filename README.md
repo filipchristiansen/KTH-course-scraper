@@ -6,4 +6,4 @@ Running the scraper requires Python 3.8 or later (*due to the use of built-in ty
 
 The scraper is run by executing [scraper.py](scraper.py) which will create two files, [kth_courses.csv](kth_courses.csv) and [kth_offerings.csv](kth_offerings.csv). The first file contains information about all courses, while the second file contains information about all offerings of courses. The two files can be combined through an inner join on the `Course code` column, which is the primary key for the `kth_courses.csv` file, while joint primary keys for the `kth_offerings.csv` file are `Course code` and `Semester`.
 
-For testing purposes, the scraper can be run with the `--debug` flag set to `True`, which will limit the scraping to the first `20` courses.
+For testing purposes, the scraper can be run with the `--debug` flag set to `True`, which will limit the scraping to the first `5` courses.

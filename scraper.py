@@ -26,8 +26,9 @@ class KTHCourseScraper(webdriver.Firefox):
         df_courses = self._post_process_courses(pd.DataFrame(courses))
         df_offerings = self._post_process_course_offerings(pd.DataFrame(course_offerings))
 
-        df_courses.to_csv('kth_courses.csv', index=False)
-        df_offerings.to_csv('kth_offerings.csv', index=False)
+        file_prefix = 'debug_' if debug else ''
+        df_courses.to_csv(file_prefix + 'kth_courses.csv', index=False)
+        df_offerings.to_csv(file_prefix + 'kth_offerings.csv', index=False)
 
     def _get_courses(self, debug: bool = False) -> List[Dict[str, Any]]:
         courses = []
@@ -225,15 +226,26 @@ class KTHCourseScraper(webdriver.Firefox):
 
     @staticmethod
     def _post_process_course_offerings(df: pd.DataFrame) -> pd.DataFrame:
+
         df_ = df.rename(columns={'For course offering': 'Year'})
+        df_[['Starting Term', 'Year']] = df_.Year.str.extract(r'(Autumn|Spring)\s(\d{4})\s')
+
+        # get academic year and term
+        year_term = df_.loc[pd.notna(df_['Year']), ['Year', 'Starting Term']].astype({'Year': int})
+        year_term.loc[year_term['Starting Term'] == 'Spring', 'Year'] -= 1
+        df_.loc[pd.notna(df_['Year']), 'Year'] = year_term.Year.astype(str) + '/' + (year_term.Year + 1).astype(str)
+
+        # concatenate course periods where needed
         df_.loc[df_.Periods.apply(lambda x: isinstance(x, list)), 'Periods'] = df_.loc[
             df_.Periods.apply(lambda x: isinstance(x, list)), 'Periods'
         ].str.join(', ')
 
+        # process for next step
         signs_to_remove = ["'", ' hp', ' fup', 'Autumn', 'Spring', ':']
         for sign in signs_to_remove:
             df_.Periods = df_.Periods.str.replace(sign, '', regex=False)
 
+        # get credicts per academic period
         for period in ['P1', 'P2', 'P3', 'P4']:
             df_[period] = df_.Periods.str.extract(fr'(?<=(?:{period}\s\())(.+?)(?=\))').astype(float)
 
